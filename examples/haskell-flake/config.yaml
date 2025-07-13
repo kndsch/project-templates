@@ -1,0 +1,5 @@
+preProcess:
+  - "nix shell nixpkgs#cabal-install nixpkgs#ghc --command cabal init {{ project-name }}"
+postProcess:
+  - "[ -d .git ] || git init && git add flake.nix"
+  - "direnv allow"

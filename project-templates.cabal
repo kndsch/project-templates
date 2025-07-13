@@ -1,0 +1,86 @@
+cabal-version:      3.0
+name:               project-templates
+version:            0.1.0.0
+-- synopsis:
+-- description:
+license:            MIT
+license-file:       LICENSE
+author:             kndsch
+maintainer:         kndsch@posteo.de
+-- copyright:
+category:           Development
+build-type:         Simple
+extra-doc-files:    CHANGELOG.md
+-- extra-source-files:
+
+common warnings
+    ghc-options: -Wall
+
+common hie
+    ghc-options: -fwrite-ide-info
+                 -hiedir=.hie
+
+library 
+    import:           warnings, hie
+    exposed-modules: ProjectTemplates.Run
+                   , ProjectTemplates.Templates.Processor
+                   , ProjectTemplates.Templates.Config
+                   , ProjectTemplates.Templates.Transforms
+    other-modules: ProjectTemplates.App.App
+                 , ProjectTemplates.App.Config
+                 , ProjectTemplates.App.State
+                 , ProjectTemplates.App.Errors
+                 , ProjectTemplates.App.Cli
+                 , ProjectTemplates.App.Env
+                 , ProjectTemplates.App.Files
+                 , ProjectTemplates.App.Process
+                 , ProjectTemplates.App.Variables
+                 , ProjectTemplates.App.Hooks
+    default-extensions: OverloadedStrings
+                      , StrictData
+    build-depends:    aeson
+                    , base ^>=4.19
+                    , casing
+                    , containers
+                    , dir-traverse
+                    , directory
+                    , either
+                    , exceptions
+                    , filepath
+                    , haskeline
+                    , megaparsec
+                    , monad-logger
+                    , monad-loops
+                    , mtl
+                    , optparse-applicative
+                    , path
+                    , path-io
+                    , process
+                    , text
+                    , transformers
+                    , yaml
+    hs-source-dirs:   src
+    default-language: Haskell2010
+
+executable template
+    import:           warnings, hie
+    main-is:          Main.hs
+    build-depends:   base ^>=4.19
+                   , project-templates == 0.1.0.0
+    hs-source-dirs:   app
+    default-language: Haskell2010
+
+test-suite tests
+    import:           warnings, hie
+    type: exitcode-stdio-1.0
+    main-is: Main.hs
+    default-extensions: OverloadedStrings
+    build-depends: base ^>=4.19
+                 , hspec
+                 , project-templates
+                 , tasty
+                 , tasty-hspec
+                 , containers
+    other-modules: TemplatesSpec
+    hs-source-dirs: tests
+    default-language: Haskell2010

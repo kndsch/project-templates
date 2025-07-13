@@ -1,0 +1,57 @@
+version: '3'
+
+tasks:
+  build:
+    desc: Build the project
+    cmds:
+      - cabal build
+
+  test:
+    desc: Run the test suite
+    cmds:
+      - cabal test
+
+  run:
+    desc: Run the template processor (requires template arguments)
+    cmds:
+      - cabal run template -- {{.CLI_ARGS}}
+
+  format:
+    desc: Format Haskell source code
+    cmds:
+      - fourmolu src/
+      - cabal-fmt project-templates.cabal
+
+  hlint:
+    desc: Lint the code with hlint
+    cmds:
+      - hlint src/
+
+  stan:
+    desc: Run static analysis with Stan
+    cmds:
+      - stan --cabal-file-path ./project-templates.cabal --no-default
+
+  lint:
+    desc: Run all linters
+    deps: [hlint, stan]
+
+  clean:
+    desc: Clean build artifacts
+    cmds:
+      - cabal clean
+
+  nix-build:
+    desc: Build project using Nix
+    cmds:
+      - nix build
+
+  deps:
+    desc: Install dependencies
+    cmds:
+      - cabal update
+      - cabal install --dependencies-only
+
+  check:
+    desc: Run all checks (build, test, format, lint)
+    deps: [format, lint, build, test]
