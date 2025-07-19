@@ -1,3 +1,4 @@
+description: "Template for integrating cabal init with devenv"
 preProcess:
   - "nix shell nixpkgs#cabal-install nixpkgs#ghc --command cabal init {{ project-name }}"
 postProcess:

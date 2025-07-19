@@ -11,17 +11,18 @@ import Options.Applicative
 import ProjectTemplates.App.Env (EnvVars (..))
 
 data Options = Options
-  { template :: T.Text,
+  { template :: Maybe T.Text,
     templatesDir :: FilePath,
     current :: Bool,
-    verbosity :: Int
+    verbosity :: Int,
+    listTemplates :: Bool
   }
   deriving (Show)
 
 optionParser :: EnvVars -> Parser Options
 optionParser env =
   Options
-    <$> strArgument (metavar "TEMPLATE" <> help "Template to use")
+    <$> optional (strArgument (metavar "TEMPLATE" <> help "Template to use"))
     <*> strOption
       ( long "template-dir"
           <> short 'd'
@@ -43,6 +44,11 @@ optionParser env =
           <> value 2
           <> showDefault
           <> help "Verbosity level (0-3)"
+      )
+    <*> switch
+      ( long "list-templates"
+          <> short 'l'
+          <> help "List all available templates with descriptions"
       )
 
 cliParser :: EnvVars -> ParserInfo Options

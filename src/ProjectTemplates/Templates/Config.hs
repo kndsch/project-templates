@@ -15,7 +15,8 @@ data VariableConfig = VariableConfig
 data TemplateConfig = TemplateConfig
   { variables :: M.Map T.Text VariableConfig,
     preProcess :: [T.Text],
-    postProcess :: [T.Text]
+    postProcess :: [T.Text],
+    description :: Maybe T.Text
   }
   deriving (Show, Generic)
 
@@ -27,6 +28,7 @@ instance FromJSON TemplateConfig where
       <$> v .:? "variables" .!= M.empty
       <*> v .:? "preProcess" .!= []
       <*> v .:? "postProcess" .!= []
+      <*> v .:? "description"
 
 getDefaultValue :: TemplateConfig -> T.Text -> Maybe T.Text
 getDefaultValue config var = do
@@ -36,7 +38,7 @@ getDefaultValue config var = do
 type VariableDefinitions = M.Map T.Text T.Text
 
 defaultTemplateConfig :: TemplateConfig
-defaultTemplateConfig = TemplateConfig M.empty [] []
+defaultTemplateConfig = TemplateConfig M.empty [] [] Nothing
 
 data TemplateError
   = ParseError T.Text

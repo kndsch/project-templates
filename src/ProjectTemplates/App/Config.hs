@@ -9,13 +9,16 @@ module ProjectTemplates.App.Config
     templateConfigPath,
     templateFilePath,
     buildAppConfig,
+    listAvailableTemplates,
+    TemplateInfo (..),
   )
 where
 
-import Control.Monad.Catch (MonadThrow, throwM)
+import Control.Monad.Catch (MonadThrow, throwM, try, SomeException)
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Control.Monad.Logger (LogLevel)
 import Control.Monad.Logger.CallStack (LogLevel (..))
+import Data.Yaml (decodeFileEither, ParseException)
 import qualified Data.Text as T
 import Path (Abs, Dir, File, Path, Rel, dirname, parseRelDir, parseSomeDir, relfile, toFilePath, (</>))
 import Path.IO
@@ -25,12 +28,19 @@ import Path.IO
   )
 import ProjectTemplates.App.Cli (Options (..))
 import ProjectTemplates.App.Errors
+import ProjectTemplates.Templates.Config (TemplateConfig(..))
 import System.FilePath (dropTrailingPathSeparator)
 
 data AppConfig = AppConfig
   { templateDir :: Path Abs Dir,
     current :: Bool,
     logLevel :: LogLevel
+  }
+  deriving (Show)
+
+data TemplateInfo = TemplateInfo
+  { templateName :: T.Text,
+    templateDescription :: Maybe T.Text
   }
   deriving (Show)
 
@@ -42,7 +52,9 @@ templateConfigPath config = templateDir config </> [relfile|config.yaml|]
 
 buildAppConfig :: Options -> IO AppConfig
 buildAppConfig Options {templatesDir, template, current, verbosity} = do
-  templateDir <- getTemplateDir templatesDir template
+  templateDir <- case template of
+    Just tmpl -> getTemplateDir templatesDir tmpl
+    Nothing -> liftIO $ parseSomeDir templatesDir >>= makeAbsolute  -- For listing mode
   let logLevel = getLogLevel verbosity
   pure $
     AppConfig
@@ -72,3 +84,23 @@ getLogLevel v = case v of
   1 -> LevelWarn
   2 -> LevelInfo
   _ -> LevelDebug
+
+listAvailableTemplates :: (MonadIO m, MonadThrow m) => FilePath -> m [TemplateInfo]
+listAvailableTemplates dir = do
+  templatesDir' <- liftIO $ parseSomeDir dir >>= makeAbsolute
+  templatesDirExists <- liftIO $ doesDirExist templatesDir'
+  if not templatesDirExists
+    then throwM $ RunTimeError "Templates directory does not exist"
+    else do
+      (templateDirs, _) <- listDir templatesDir'
+      mapM getTemplateInfo templateDirs
+  where
+    getTemplateInfo :: (MonadIO m) => Path Abs Dir -> m TemplateInfo
+    getTemplateInfo templateDir = do
+      let templateName = T.pack $ dropTrailingPathSeparator $ toFilePath $ dirname templateDir
+      let configPath = templateDir </> [relfile|config.yaml|]
+      configResult <- liftIO $ (try :: IO (Either ParseException TemplateConfig) -> IO (Either SomeException (Either ParseException TemplateConfig))) $ decodeFileEither $ toFilePath configPath
+      let templateDescription = case configResult of
+            Right (Right config) -> description config
+            _ -> Nothing
+      return $ TemplateInfo templateName templateDescription

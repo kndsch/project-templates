@@ -16,8 +16,9 @@ import Control.Monad.State (runStateT)
 import qualified Data.Text as T
 import Options.Applicative (execParser)
 import ProjectTemplates.App.App (App, AppT (runApp))
-import ProjectTemplates.App.Cli (cliParser)
-import ProjectTemplates.App.Config (AppConfig (..), buildAppConfig)
+import ProjectTemplates.App.Cli (Options (..), cliParser)
+import ProjectTemplates.App.Config (TemplateInfo (..), buildAppConfig, listAvailableTemplates)
+import qualified ProjectTemplates.App.Config as Config
 import ProjectTemplates.App.Env (readEnvVars)
 import ProjectTemplates.App.Errors (RunTimeError (..))
 import ProjectTemplates.App.Files (readConfig)
@@ -31,23 +32,37 @@ app :: App ()
 app = do
   config <- readConfig
   getVariableDefinitions config
-  useCurrent <- asks current
+  useCurrent <- asks Config.current
   unless useCurrent $ preProcessHook config
   applyTemplate
   unless useCurrent $ postProcessHook config
 
-
 execApp :: IO ()
 execApp = handle showError $ do
-  config <- getAppConfig
-  void $ flip runReaderT config $ flip runStateT defaultAppState $ runApp app
-  exitSuccess
+  env <- readEnvVars
+  options <- execParser $ cliParser env
+  if listTemplates options
+    then do
+      templates <- listAvailableTemplates (templatesDir options)
+      printTemplates templates
+      exitSuccess
+    else case template options of
+      Nothing -> liftIO $ putStrLn "Error: TEMPLATE argument is required."
+      Just _ -> do
+        config <- buildAppConfig options
+        void $ flip runReaderT config $ flip runStateT defaultAppState $ runApp app
+        exitSuccess
   where
     showError :: (MonadIO m) => RunTimeError -> m ()
     showError (RunTimeError e) = liftIO $ putStrLn (T.unpack e)
 
-getAppConfig :: IO AppConfig
-getAppConfig = do
-  env <- liftIO readEnvVars
-  options <- liftIO $ execParser $ cliParser env
-  buildAppConfig options
+    printTemplates :: [TemplateInfo] -> IO ()
+    printTemplates templates = do
+      putStrLn "Available templates:"
+      mapM_ printTemplate templates
+
+    printTemplate :: TemplateInfo -> IO ()
+    printTemplate (TemplateInfo name (Just desc)) =
+      putStrLn $ "  " ++ T.unpack name ++ " - " ++ T.unpack desc
+    printTemplate (TemplateInfo name Nothing) =
+      putStrLn $ "  " ++ T.unpack name
