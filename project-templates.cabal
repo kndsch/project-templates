@@ -26,16 +26,16 @@ library
                    , ProjectTemplates.Templates.Processor
                    , ProjectTemplates.Templates.Config
                    , ProjectTemplates.Templates.Transforms
-    other-modules: ProjectTemplates.App.App
-                 , ProjectTemplates.App.Config
-                 , ProjectTemplates.App.State
-                 , ProjectTemplates.App.Errors
-                 , ProjectTemplates.App.Cli
-                 , ProjectTemplates.App.Env
-                 , ProjectTemplates.App.Files
-                 , ProjectTemplates.App.Process
-                 , ProjectTemplates.App.Variables
-                 , ProjectTemplates.App.Hooks
+                   , ProjectTemplates.App.App
+                   , ProjectTemplates.App.Config
+                   , ProjectTemplates.App.State
+                   , ProjectTemplates.App.Errors
+                   , ProjectTemplates.App.Cli
+                   , ProjectTemplates.App.Env
+                   , ProjectTemplates.App.Files
+                   , ProjectTemplates.App.Process
+                   , ProjectTemplates.App.Variables
+                   , ProjectTemplates.App.Hooks
     default-extensions: OverloadedStrings
                       , StrictData
     build-depends:    aeson
@@ -81,6 +81,23 @@ test-suite tests
                  , tasty
                  , tasty-hspec
                  , containers
+                 , text
+                 , exceptions
+                 , path
+                 , path-io
+                 , filepath
+                 , temporary
+                 , yaml
+                 , monad-logger
+                 , mtl
+                 , directory
     other-modules: TemplatesSpec
+                 , TransformsSpec
+                 , TestUtils
+                 , ConfigSpec
+                 , VariablesSpec
+                 , ProcessSpec
+                 , TemplateErrorSpec
+                 , HooksSpec
     hs-source-dirs: tests
     default-language: Haskell2010
