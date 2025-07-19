@@ -27,14 +27,14 @@ tasks:
     cmds:
       - hlint src/
 
-  stan:
-    desc: Run static analysis with Stan
+  ghc-warnings:
+    desc: Check for GHC warnings during compilation
     cmds:
-      - stan --cabal-file-path ./project-templates.cabal --no-default
+      - cabal build --ghc-options="-Wall -Werror"
 
   lint:
     desc: Run all linters
-    deps: [hlint, stan]
+    deps: [hlint, ghc-warnings]
 
   clean:
     desc: Clean build artifacts
