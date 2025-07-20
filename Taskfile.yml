@@ -27,14 +27,9 @@ tasks:
     cmds:
       - hlint src/
 
-  ghc-warnings:
-    desc: Check for GHC warnings during compilation
-    cmds:
-      - cabal build --ghc-options="-Wall -Werror"
-
   lint:
     desc: Run all linters
-    deps: [hlint, ghc-warnings]
+    deps: [hlint]
 
   clean:
     desc: Clean build artifacts

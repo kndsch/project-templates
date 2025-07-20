@@ -19,7 +19,7 @@ import Path.IO (createDirIfMissing, withSystemTempDir)
 import ProjectTemplates.App.App (App, runApp)
 import ProjectTemplates.App.Config (AppConfig(..))
 import ProjectTemplates.App.State (AppState(..), defaultAppState, projectNameKey)
-import ProjectTemplates.App.Variables (getVariableDefinitions)
+import ProjectTemplates.App.Variables (setVariableDefinitions)
 import ProjectTemplates.Templates.Config (TemplateConfig(..), VariableConfig(..), VariableDefinitions)
 import ProjectTemplates.Templates.Processor (collectVariables)
 import System.Directory (getCurrentDirectory)
@@ -67,7 +67,7 @@ spec = do
                 , ("author", VariableConfig (Just "test-author") (Just "default-author"))
                 , ("license", VariableConfig Nothing (Just "MIT"))
                 ]
-          let templateConfig = TemplateConfig varConfig [] [] Nothing
+          let templateConfig = TemplateConfig varConfig [] [] Nothing []
           
           -- Test the config value extraction directly
           let configDefs = M.mapMaybe value (variables templateConfig)
@@ -81,7 +81,7 @@ spec = do
           projectDir <- (tmpDir </>) <$> parseRelDir "my-project"
           createDirIfMissing True projectDir
           
-          let templateConfig = TemplateConfig M.empty [] [] Nothing
+          let templateConfig = TemplateConfig M.empty [] [] Nothing []
           let appConfig = AppConfig
                 { templateDir = projectDir
                 , current = True
@@ -100,7 +100,7 @@ spec = do
         let varConfig = M.fromList
               [ ("version", VariableConfig (Just "2.0.0") (Just "1.0.0"))
               ]
-        let templateConfig = TemplateConfig varConfig [] [] Nothing
+        let templateConfig = TemplateConfig varConfig [] [] Nothing []
         
         -- The value should be used, not the default
         let configDefs = M.mapMaybe value (variables templateConfig)
@@ -110,7 +110,7 @@ spec = do
         let varConfig = M.fromList
               [ ("version", VariableConfig Nothing (Just "1.0.0"))
               ]
-        let templateConfig = TemplateConfig varConfig [] [] Nothing
+        let templateConfig = TemplateConfig varConfig [] [] Nothing []
         
         -- No value means it needs user input
         let configDefs = M.mapMaybe value (variables templateConfig)
@@ -130,7 +130,7 @@ spec = do
           writeFile (toFilePath file2) "Some content"
           
           let hookCommands = ["echo {{version}}", "npm install {{deps}}"] :: [Text]
-          let templateConfig = TemplateConfig M.empty hookCommands [] Nothing
+          let templateConfig = TemplateConfig M.empty hookCommands [] Nothing []
           
           -- Test that we would collect all these variables
           let extractVars template = case collectVariables template of

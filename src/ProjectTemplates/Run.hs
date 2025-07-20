@@ -12,7 +12,7 @@ import Control.Monad.Reader
   ( ReaderT (runReaderT),
   )
 import Control.Monad.Reader.Class (asks)
-import Control.Monad.State (runStateT)
+import Control.Monad.State (modify', runStateT)
 import qualified Data.Text as T
 import Options.Applicative (execParser)
 import ProjectTemplates.App.App (App, AppT (runApp))
@@ -24,14 +24,15 @@ import ProjectTemplates.App.Errors (RunTimeError (..))
 import ProjectTemplates.App.Files (readConfig)
 import ProjectTemplates.App.Hooks (postProcessHook, preProcessHook)
 import ProjectTemplates.App.Process (applyTemplate)
-import ProjectTemplates.App.State (defaultAppState)
-import ProjectTemplates.App.Variables (getVariableDefinitions)
+import ProjectTemplates.App.State (AppState (..), defaultAppState)
+import ProjectTemplates.App.Variables (setVariableDefinitions)
 import System.Exit (exitSuccess)
 
 app :: App ()
 app = do
   config <- readConfig
-  getVariableDefinitions config
+  modify' $ \s -> s {templateConfig = config}
+  setVariableDefinitions config
   useCurrent <- asks Config.current
   unless useCurrent $ preProcessHook config
   applyTemplate

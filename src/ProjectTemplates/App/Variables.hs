@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -Wno-unused-do-bind #-}
 
-module ProjectTemplates.App.Variables (getVariableDefinitions) where
+module ProjectTemplates.App.Variables (setVariableDefinitions) where
 
 import Control.Applicative ((<|>))
 import Control.Monad.IO.Class (liftIO)
@@ -44,8 +44,8 @@ collectAllVariables config = do
   hookVars <- concat <$> mapM (\h -> runProcessor collectVariables h Nothing) hooks
   return $ S.fromList (fileNameVars ++ fileVars ++ hookVars ++ [projectNameKey])
 
-getVariableDefinitions :: TemplateConfig -> App ()
-getVariableDefinitions config = do
+setVariableDefinitions :: TemplateConfig -> App ()
+setVariableDefinitions config = do
   usedVariables <- collectAllVariables config
   configDefinitions <- createDefinitions config
   let neededDefinitions = S.toList $ usedVariables `S.difference` M.keysSet configDefinitions

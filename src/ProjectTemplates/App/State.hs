@@ -1,6 +1,12 @@
 {-# LANGUAGE FlexibleContexts #-}
 
-module ProjectTemplates.App.State where
+module ProjectTemplates.App.State
+  ( AppState (..),
+    defaultAppState,
+    projectNameKey,
+    getProjectName,
+  )
+where
 
 import Control.Monad.Catch (MonadThrow, throwM)
 import Control.Monad.State (MonadState)
@@ -8,15 +14,15 @@ import Control.Monad.State.Class (gets)
 import qualified Data.Map as M
 import qualified Data.Text as T
 import ProjectTemplates.App.Errors (InternalError (..))
-import ProjectTemplates.Templates.Config (VariableDefinitions)
+import ProjectTemplates.Templates.Config (TemplateConfig, VariableDefinitions, defaultTemplateConfig)
 
-newtype AppState = AppState
-  { defs ::
-      VariableDefinitions
+data AppState = AppState
+  { defs :: VariableDefinitions,
+    templateConfig :: TemplateConfig
   }
 
 defaultAppState :: AppState
-defaultAppState = AppState M.empty
+defaultAppState = AppState M.empty defaultTemplateConfig
 
 projectNameKey :: T.Text
 projectNameKey = "project-name"

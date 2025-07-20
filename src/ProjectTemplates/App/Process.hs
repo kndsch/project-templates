@@ -16,12 +16,13 @@ import qualified Data.Text.IO as TIO
 import Path
 import Path.IO (createDirIfMissing, doesFileExist)
 import ProjectTemplates.App.App
-import ProjectTemplates.App.Config (AppConfig (..), templateFilePath)
+import ProjectTemplates.App.Config (templateFilePath)
 import ProjectTemplates.App.Errors (InternalError (InternalError), RunTimeError (..))
-import ProjectTemplates.App.Files (collectFiles, targetBaseDir, targetDir)
+import ProjectTemplates.App.Files (collectFiles, targetBaseDir)
 import ProjectTemplates.App.State (AppState (..))
-import ProjectTemplates.Templates.Config (TemplateError (..))
+import ProjectTemplates.Templates.Config (TemplateError (..), overwrite)
 import ProjectTemplates.Templates.Processor (TemplateProcessor, fillTemplate)
+import System.FilePath (takeFileName)
 
 applyTemplate :: App ()
 applyTemplate = do
@@ -50,14 +51,23 @@ applyFile file = do
   targetPath <- (base </>) <$> parseRelFile (T.unpack filledName)
   logInfoN $ T.append "Creating file: " $ T.pack $ toFilePath targetPath
   filledFile <- processFile (fillTemplate defs') file
-  writeContents targetPath filledFile
+  writeContents targetPath filledName filledFile
 
-writeContents :: Path Abs File -> T.Text -> App ()
-writeContents file contents = do
+writeContents :: Path Abs File -> T.Text -> T.Text -> App ()
+writeContents file relativePath contents = do
   exists <- doesFileExist file
   if exists
     then do
-      logWarnN $ T.append "Skipping " (T.pack (toFilePath file))
+      overwriteFiles <- gets (overwrite . templateConfig)
+      let fileName = T.pack $ takeFileName $ T.unpack relativePath
+      let shouldOverwrite = fileName `elem` overwriteFiles
+      if shouldOverwrite
+        then do
+          logInfoN $ T.append "Overwriting " relativePath
+          createDirIfMissing True (parent file)
+          liftIO $ TIO.writeFile (toFilePath file) contents
+        else do
+          logWarnN $ T.append "Skipping " relativePath
     else do
       createDirIfMissing True (parent file)
       liftIO $ TIO.writeFile (toFilePath file) contents

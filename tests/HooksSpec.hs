@@ -49,11 +49,11 @@ spec = do
 
     describe "Template Configuration Hooks" $ do
       it "extracts pre-process hooks from config" $ do
-        let config = TemplateConfig M.empty ["echo 'pre1'", "echo 'pre2'"] [] Nothing
+        let config = TemplateConfig M.empty ["echo 'pre1'", "echo 'pre2'"] [] Nothing []
         preProcess config `shouldBe` ["echo 'pre1'", "echo 'pre2'"]
 
       it "extracts post-process hooks from config" $ do
-        let config = TemplateConfig M.empty [] ["echo 'post1'", "echo 'post2'"] Nothing
+        let config = TemplateConfig M.empty [] ["echo 'post1'", "echo 'post2'"] Nothing []
         postProcess config `shouldBe` ["echo 'post1'", "echo 'post2'"]
 
       it "handles empty hook lists" $ do
@@ -62,7 +62,7 @@ spec = do
         postProcess config `shouldBe` []
 
       it "handles configs with mixed hooks" $ do
-        let config = TemplateConfig M.empty ["pre-hook"] ["post-hook"] Nothing
+        let config = TemplateConfig M.empty ["pre-hook"] ["post-hook"] Nothing []
         preProcess config `shouldBe` ["pre-hook"]
         postProcess config `shouldBe` ["post-hook"]
 

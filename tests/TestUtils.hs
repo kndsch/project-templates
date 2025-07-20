@@ -15,6 +15,7 @@ createTemplateConfig vars = TemplateConfig
   , preProcess = []
   , postProcess = []
   , description = Nothing
+  , overwrite = []
   }
 
 -- | Create a template config with default values for testing
@@ -24,6 +25,7 @@ createTemplateConfigWithDefaults values defaults = TemplateConfig
   , preProcess = []
   , postProcess = []
   , description = Nothing
+  , overwrite = []
   }
   where
     valueVars = M.fromList $ map (\(k, v) -> (k, VariableConfig (Just v) Nothing)) values
