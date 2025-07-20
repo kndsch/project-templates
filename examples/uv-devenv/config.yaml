@@ -1,0 +1,10 @@
+preProcess:
+  - "nix run nixpkgs#uv -- init --package {{ project-name }}"
+  - "devenv init {{ project-name }}"
+postProcess:
+  - "[ -d .git ] || git init"
+  - "direnv allow"
+
+overwrite:
+  - "devenv.nix"
+  - "devenv.yaml"
